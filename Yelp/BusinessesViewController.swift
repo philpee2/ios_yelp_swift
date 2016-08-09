@@ -8,26 +8,26 @@
 
 import UIKit
 
-class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate {
+class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate, UISearchBarDelegate {
 
     var businesses: [Business]!
-
+    var searchBar: UISearchBar!
+    var filters = [String: AnyObject]()
     @IBOutlet weak var tableView: UITableView!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        searchBar = UISearchBar()
+        navigationItem.titleView = searchBar
+        searchBar.delegate = self
+
         tableView.delegate = self
         tableView.dataSource = self
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 120
 
-        Business.searchWithTerm("", completion: { (businesses: [Business]!, error: NSError!) -> Void in
-            self.businesses = businesses
-            self.tableView.reloadData()
-            for business in businesses {
-                print(business.name!)
-                print(business.address!)
-            }
-        })
+        performSearch()
 
 /* Example of Yelp search with more search options specified
         Business.searchWithTerm("Restaurants", sort: .Distance, categories: ["asianfusion", "burgers"], deals: true) { (businesses: [Business]!, error: NSError!) -> Void in
@@ -40,15 +40,12 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         }
 */
     }
-    
+
     func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: [String : AnyObject]) {
-        let categories = filters["categories"] as? [String]
-        Business.searchWithTerm("Restaurants", sort: nil, categories: categories, deals: nil) { (businesses, error) in
-            self.tableView.reloadData()
-            self.businesses = businesses
-        }
+        self.filters = filters
+        performSearch()
     }
-    
+
 
     // MARK: - Table view
 
@@ -68,13 +65,39 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
+    
+    // MARK: - Search bar
+    
+    func searchBarCancelButtonClicked(searchBar: UISearchBar) {
+        searchBar.showsCancelButton = false
+        searchBar.endEditing(true)
+        searchBar.text = ""
+    }
+    
+    func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
+        searchBar.showsCancelButton = true
+    }
+    
+    func searchBarSearchButtonClicked(searchBar: UISearchBar) {
+        performSearch()
+        searchBar.showsCancelButton = false
+        searchBar.endEditing(true)
+        searchBar.text = ""
+    }
+    
+    private func performSearch() {
+        let categories = filters["categories"] as? [String]
+        Business.searchWithTerm(searchBar.text ?? "", sort: nil, categories: categories, deals: nil) { (businesses, error) in
+            self.businesses = businesses
+            self.tableView.reloadData()
+        }
+    }
 
     // MARK: - Navigation
 
     override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
         let navigationController = segue.destinationViewController as! UINavigationController
         let filtersViewController = navigationController.topViewController as! FiltersViewController
-        
         filtersViewController.delegate = self
     }
 
