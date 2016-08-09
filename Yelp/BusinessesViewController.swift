@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import MBProgressHUD
 
 class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate, UISearchBarDelegate {
 
@@ -86,8 +87,10 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     }
     
     private func performSearch() {
+        MBProgressHUD.showHUDAddedTo(self.view, animated: true)
         let categories = filters["categories"] as? [String]
         Business.searchWithTerm(searchBar.text ?? "", sort: nil, categories: categories, deals: nil) { (businesses, error) in
+            MBProgressHUD.hideHUDForView(self.view, animated: true)
             self.businesses = businesses
             self.tableView.reloadData()
         }
