@@ -89,8 +89,9 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         MBProgressHUD.showHUDAddedTo(self.view, animated: true)
         let categories = filters["categories"] as? [String]
         let isDealsFilter = filters["deals"] as? Bool
+        let sort = filters["sort"] as? YelpSortMode
         let search = searchBar.text ?? ""
-        Business.searchWithTerm(search, sort: nil, categories: categories, deals: isDealsFilter) { (businesses, error) in
+        Business.searchWithTerm(search, sort: sort, categories: categories, deals: isDealsFilter) { (businesses, error) in
             MBProgressHUD.hideHUDForView(self.view, animated: true)
             self.businesses = businesses
             self.tableView.reloadData()

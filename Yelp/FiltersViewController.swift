@@ -26,7 +26,9 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     var categories: [[String: String]]!
     var categorySwitchStates = [Int:Bool]()
     var isDealsFilter = false
+    var selectedSort: YelpSortMode?
     let tableStructure: [FilterIdentifier] = [.Sort, .Distance, .Deals, .Category]
+    let yelpSortLabels: [String] = ["Best Match", "Distance", "Rating"]
     weak var delegate: FiltersViewControllerDelegate?
     
     var selectedCategories: [String] {
@@ -105,6 +107,12 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         }
         
     }
+    
+    func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+        if tableStructure[indexPath.section] == .Sort {
+            selectedSort = YelpSortMode(rawValue: indexPath.row)
+        }
+    }
 
     private func getCategoryCell(indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("SwitchCell", forIndexPath: indexPath) as! SwitchCell
@@ -115,7 +123,9 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     }
 
     private func getSortCell(indexPath: NSIndexPath) -> UITableViewCell {
-        return UITableViewCell()
+        let cell = RadioCell()
+        cell.textLabel!.text = yelpSortLabels[indexPath.row]
+        return cell
     }
 
     private func getDistanceCell(indexPath: NSIndexPath) -> UITableViewCell {
@@ -134,7 +144,7 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
 
     @IBAction func onSearchButton(sender: AnyObject) {
         dismissViewControllerAnimated(true, completion: nil)
-        var filters: [String: AnyObject] = ["deals": isDealsFilter]
+        var filters: [String: AnyObject] = ["deals": isDealsFilter, "sort": selectedSort]
         if selectedCategories.count > 0 {
             filters["categories"] = selectedCategories
         }
