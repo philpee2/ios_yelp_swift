@@ -58,7 +58,6 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCellWithIdentifier("BusinessCell", forIndexPath: indexPath) as! BusinessCell
         cell.business = businesses[indexPath.row]
-        print(cell.business.name)
         return cell
     }
 
@@ -89,7 +88,9 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     private func performSearch() {
         MBProgressHUD.showHUDAddedTo(self.view, animated: true)
         let categories = filters["categories"] as? [String]
-        Business.searchWithTerm(searchBar.text ?? "", sort: nil, categories: categories, deals: nil) { (businesses, error) in
+        let isDealsFilter = filters["deals"] as? Bool
+        let search = searchBar.text ?? ""
+        Business.searchWithTerm(search, sort: nil, categories: categories, deals: isDealsFilter) { (businesses, error) in
             MBProgressHUD.hideHUDForView(self.view, animated: true)
             self.businesses = businesses
             self.tableView.reloadData()
