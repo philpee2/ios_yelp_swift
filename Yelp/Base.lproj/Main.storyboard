@@ -19,14 +19,14 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" dataMode="prototypes" style="plain" separatorStyle="default" rowHeight="139" sectionHeaderHeight="28" sectionFooterHeight="28" translatesAutoresizingMaskIntoConstraints="NO" id="Qus-uf-gjE">
-                                <rect key="frame" x="0.0" y="64" width="320" height="504"/>
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="568"/>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                                 <prototypes>
                                     <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" selectionStyle="default" indentationWidth="10" reuseIdentifier="BusinessCell" rowHeight="139" id="luY-gv-D2l" customClass="BusinessCell" customModule="Yelp" customModuleProvider="target">
                                         <rect key="frame" x="0.0" y="92" width="320" height="139"/>
                                         <autoresizingMask key="autoresizingMask"/>
                                         <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" tableViewCell="luY-gv-D2l" id="8PI-6h-IUd">
-                                            <rect key="frame" x="0.0" y="0.0" width="320" height="139"/>
+                                            <rect key="frame" x="0.0" y="0.0" width="320" height="138.5"/>
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <imageView userInteractionEnabled="NO" contentMode="scaleToFill" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="ykA-Dw-ssM">
@@ -120,7 +120,7 @@
                         <constraints>
                             <constraint firstItem="Qus-uf-gjE" firstAttribute="leading" secondItem="XhR-oz-92f" secondAttribute="leading" id="TLt-l1-qSB"/>
                             <constraint firstAttribute="trailing" secondItem="Qus-uf-gjE" secondAttribute="trailing" id="eww-PY-Cae"/>
-                            <constraint firstItem="Qus-uf-gjE" firstAttribute="top" secondItem="hR0-74-jRp" secondAttribute="bottom" id="kXL-5p-d3d"/>
+                            <constraint firstItem="Qus-uf-gjE" firstAttribute="top" secondItem="XhR-oz-92f" secondAttribute="top" id="pPE-c3-rY6"/>
                             <constraint firstItem="VBY-gq-v8E" firstAttribute="top" secondItem="Qus-uf-gjE" secondAttribute="bottom" id="snd-F5-zC6"/>
                         </constraints>
                     </view>
