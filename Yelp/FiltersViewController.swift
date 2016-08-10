@@ -15,8 +15,8 @@ enum FilterIdentifier: String {
     case Deals = "deals"
 }
 
-@objc protocol FiltersViewControllerDelegate {
-    optional func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: [String:AnyObject])
+protocol FiltersViewControllerDelegate {
+    func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: [String:Any])
 }
 
 class FiltersViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, SwitchCellDelegate {
@@ -29,12 +29,20 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     var selectedSort: YelpSortMode?
     let tableStructure: [FilterIdentifier] = [.Sort, .Distance, .Deals, .Category]
     let yelpSortLabels: [String] = ["Best Match", "Distance", "Rating"]
-    weak var delegate: FiltersViewControllerDelegate?
+    var delegate: FiltersViewControllerDelegate?
     
     var selectedCategories: [String] {
         return categorySwitchStates
             .filter { (row, isSelected) in isSelected }
             .map { (row, isSelected) in categories[row]["code"]! }
+    }
+    
+    var filters: [String: Any] {
+        var ret: [String: Any] = ["deals": isDealsFilter, "sort": selectedSort]
+        if selectedCategories.count > 0 {
+            ret["categories"] = selectedCategories
+        }
+        return ret
     }
 
     override func viewDidLoad() {
@@ -144,18 +152,14 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
 
     @IBAction func onSearchButton(sender: AnyObject) {
         dismissViewControllerAnimated(true, completion: nil)
-        var filters: [String: AnyObject] = ["deals": isDealsFilter, "sort": selectedSort]
-        if selectedCategories.count > 0 {
-            filters["categories"] = selectedCategories
-        }
-        delegate?.filtersViewController?(self, didUpdateFilters: filters)
+        delegate?.filtersViewController(self, didUpdateFilters: filters)
     }
 
     @IBAction func onCancelButton(sender: AnyObject) {
         dismissViewControllerAnimated(true, completion: nil)
     }
 
-    func yelpCategories() -> [[String: String]] {
+    private func yelpCategories() -> [[String: String]] {
         return [
             ["name" : "Afghan", "code": "afghani"],
             ["name" : "African", "code": "african"],

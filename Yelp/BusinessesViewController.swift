@@ -13,7 +13,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
 
     var businesses: [Business]!
     var searchBar: UISearchBar!
-    var filters = [String: AnyObject]()
+    var filters = [String: Any]()
     @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
@@ -42,7 +42,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
 */
     }
 
-    func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: [String : AnyObject]) {
+    func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: [String : Any]) {
         self.filters = filters
         performSearch()
     }
