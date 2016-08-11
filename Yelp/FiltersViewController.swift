@@ -19,6 +19,8 @@ protocol FiltersViewControllerDelegate {
     func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: [String:Any])
 }
 
+let contractedCategories = 5
+
 class FiltersViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, SwitchCellDelegate {
 
     @IBOutlet weak var tableView: UITableView!
@@ -27,13 +29,26 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     var categorySwitchStates = [Int:Bool]()
     var isDealsFilter = false
     var selectedSort: YelpSortMode?
+    
     let tableStructure: [FilterIdentifier] = [.Sort, .Distance, .Deals, .Category]
     let yelpSortLabels: [String] = ["Best Match", "Distance", "Rating"]
-    // TODO: Use a struct?
+    
+    var selectedDistanceMode: YelpDistanceMode?
+    var selectedDistance: Double? {
+        return selectedDistanceMode == nil ? nil : distanceOptions[selectedDistanceMode!.rawValue]
+    }
     // Distances are in miles
-    let distanceOptions: [(String, Double)] = [("2 blocks", 0.05), ("6 blocks", 0.15), ("1 mile", 1), ("5 miles", 5)]
-    var selectedDistance: Double?
+    let distanceOptions = [0.05, 0.15, 1, 5]
+    let distanceLabels = ["2 blocks", "6 blocks", "1 mile", "5 miles"]
+    
     var delegate: FiltersViewControllerDelegate?
+    
+    var expandedState: [FilterIdentifier: Bool] = [
+        .Category: false,
+        .Sort: false,
+        .Distance: false,
+        .Deals: true,
+    ]
 
     var selectedCategories: [String] {
         return categorySwitchStates
@@ -73,11 +88,11 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch tableStructure[section] {
         case .Category:
-            return categories.count
+            return isFilterExpanded(.Category) ? categories.count : contractedCategories
         case .Sort:
-            return yelpSortLabels.count
+            return isFilterExpanded(.Sort) ? yelpSortLabels.count : 1
         case .Distance:
-            return distanceOptions.count
+            return isFilterExpanded(.Distance) ? distanceOptions.count : 1
         case .Deals:
             return 1
         }
@@ -106,24 +121,17 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
             return "Distance"
         case .Deals:
             return "Offering a Deal"
-
         }
     }
     
     func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-        let selectedIndexPaths = indexPathsForSelectedRowsInSection(indexPath.section)
+        let selectedIndexPath = indexPathOfSelectedRowInSection(indexPath.section)
         
-        if selectedIndexPaths.count == 1 {
-            tableView.deselectRowAtIndexPath(selectedIndexPaths[0], animated: true)
+        if let selectedIndexPath = selectedIndexPath {
+            tableView.deselectRowAtIndexPath(selectedIndexPath, animated: true)
         }
         
         return indexPath
-    }
-    
-    func indexPathsForSelectedRowsInSection(section: Int) -> [NSIndexPath] {
-        return (tableView.indexPathsForSelectedRows ?? []).filter({ (indexPath) -> Bool in
-            indexPath.section == section
-        })
     }
 
     func switchCell(switchCell: SwitchCell, didChangeValue value: Bool) {
@@ -141,7 +149,12 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         if section == .Sort {
             selectedSort = YelpSortMode(rawValue: indexPath.row)
         } else if section == .Distance {
-            selectedDistance = distanceOptions[indexPath.row].1
+            selectedDistanceMode = YelpDistanceMode(rawValue: indexPath.row)
+        }
+        
+        if (section == .Sort || section == .Distance) {
+            toggleSectionExpanded(section)
+            tableView.reloadData()
         }
     }
 
@@ -153,15 +166,41 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         return cell
     }
 
-    private func getSortCell(indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("RadioCell") as! RadioCell
-        cell.radioLabel.text = yelpSortLabels[indexPath.row]
-        return cell
+    private func getSortCell(indexPath: NSIndexPath) -> RadioCell {
+        return getSortOrDistanceCell(
+            .Sort,
+            indexPath: indexPath,
+            options: yelpSortLabels,
+            selectedIndex: selectedSort?.rawValue
+        )
     }
 
-    private func getDistanceCell(indexPath: NSIndexPath) -> UITableViewCell {
+    private func getDistanceCell(indexPath: NSIndexPath) -> RadioCell {
+        return getSortOrDistanceCell(
+            .Distance,
+            indexPath: indexPath,
+            options: distanceLabels,
+            selectedIndex: selectedDistanceMode?.rawValue
+        )
+    }
+    
+    private func getSortOrDistanceCell(
+        sortOrDistance: FilterIdentifier,
+        indexPath: NSIndexPath,
+        options: [String],
+        selectedIndex: Int? ) -> RadioCell
+    {
         let cell = tableView.dequeueReusableCellWithIdentifier("RadioCell") as! RadioCell
-        cell.radioLabel.text = distanceOptions[indexPath.row].0
+        var cellText: String
+        if isFilterExpanded(sortOrDistance) {
+            cellText = options[indexPath.row]
+        } else if selectedIndex == nil {
+            cellText = options[0]
+        } else {
+            cellText = options[selectedIndex!]
+            cell.accessoryType = .Checkmark
+        }
+        cell.radioLabel.text = cellText
         return cell
     }
 
@@ -171,6 +210,15 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         cell.onSwitch.on = isDealsFilter
         cell.switchLabel.text = "Offering a deal"
         return cell
+    }
+    
+    private func isFilterExpanded(section: FilterIdentifier) -> Bool {
+        // Why is ! needed here?
+        return expandedState[section]!
+    }
+    
+    private func toggleSectionExpanded(section: FilterIdentifier) {
+        expandedState[section] = !isFilterExpanded(section)
     }
 
     // MARK: - Actions
