@@ -10,6 +10,7 @@ import UIKit
 
 class RadioCell: UITableViewCell {
 
+    @IBOutlet weak var radioLabel: UILabel!
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code

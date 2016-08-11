@@ -29,16 +29,19 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     var selectedSort: YelpSortMode?
     let tableStructure: [FilterIdentifier] = [.Sort, .Distance, .Deals, .Category]
     let yelpSortLabels: [String] = ["Best Match", "Distance", "Rating"]
+    // TODO: Use a struct?
+    let distanceOptions: [(String, Int)] = [("1 mile", 1), ("5 miles", 1), ("10 miles", 10)]
+    var selectedDistance: Int?
     var delegate: FiltersViewControllerDelegate?
-    
+
     var selectedCategories: [String] {
         return categorySwitchStates
             .filter { (row, isSelected) in isSelected }
             .map { (row, isSelected) in categories[row]["code"]! }
     }
-    
+
     var filters: [String: Any] {
-        var ret: [String: Any] = ["deals": isDealsFilter, "sort": selectedSort]
+        var ret: [String: Any] = ["deals": isDealsFilter, "sort": selectedSort, "distance": selectedDistance]
         if selectedCategories.count > 0 {
             ret["categories"] = selectedCategories
         }
@@ -70,9 +73,9 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         case .Category:
             return categories.count
         case .Sort:
-            return 3
+            return yelpSortLabels.count
         case .Distance:
-            return 1
+            return distanceOptions.count
         case .Deals:
             return 1
         }
@@ -113,12 +116,14 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         } else if section == .Deals {
             isDealsFilter = value
         }
-        
     }
-    
+
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        if tableStructure[indexPath.section] == .Sort {
+        let section = tableStructure[indexPath.section]
+        if section == .Sort {
             selectedSort = YelpSortMode(rawValue: indexPath.row)
+        } else if section == .Distance {
+            selectedDistance = distanceOptions[indexPath.row].1
         }
     }
 
@@ -131,13 +136,15 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     }
 
     private func getSortCell(indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = RadioCell()
-        cell.textLabel!.text = yelpSortLabels[indexPath.row]
+        let cell = tableView.dequeueReusableCellWithIdentifier("RadioCell") as! RadioCell
+        cell.radioLabel.text = yelpSortLabels[indexPath.row]
         return cell
     }
 
     private func getDistanceCell(indexPath: NSIndexPath) -> UITableViewCell {
-        return UITableViewCell()
+        let cell = tableView.dequeueReusableCellWithIdentifier("RadioCell") as! RadioCell
+        cell.radioLabel.text = distanceOptions[indexPath.row].0
+        return cell
     }
 
     private func getDealsCell(indexPath: NSIndexPath) -> UITableViewCell {

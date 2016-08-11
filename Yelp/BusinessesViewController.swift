@@ -91,7 +91,8 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         let isDealsFilter = filters["deals"] as? Bool
         let sort = filters["sort"] as? YelpSortMode
         let search = searchBar.text ?? ""
-        Business.searchWithTerm(search, sort: sort, categories: categories, deals: isDealsFilter) { (businesses, error) in
+        let distance = filters["distance"] as? Int
+        Business.searchWithTerm(search, sort: sort, categories: categories, deals: isDealsFilter, distance: distance) { (businesses, error) in
             MBProgressHUD.hideHUDForView(self.view, animated: true)
             self.businesses = businesses
             self.tableView.reloadData()
