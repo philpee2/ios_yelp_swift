@@ -30,8 +30,9 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     let tableStructure: [FilterIdentifier] = [.Sort, .Distance, .Deals, .Category]
     let yelpSortLabels: [String] = ["Best Match", "Distance", "Rating"]
     // TODO: Use a struct?
-    let distanceOptions: [(String, Int)] = [("1 mile", 1), ("5 miles", 1), ("10 miles", 10)]
-    var selectedDistance: Int?
+    // Distances are in miles
+    let distanceOptions: [(String, Double)] = [("2 blocks", 0.05), ("6 blocks", 0.15), ("1 mile", 1), ("5 miles", 5)]
+    var selectedDistance: Double?
     var delegate: FiltersViewControllerDelegate?
 
     var selectedCategories: [String] {
@@ -53,6 +54,7 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         tableView.delegate = self
         tableView.dataSource = self
         categories = yelpCategories()
+        tableView.allowsMultipleSelection = true
 
         // Do any additional setup after loading the view.
     }
@@ -106,6 +108,22 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
             return "Offering a Deal"
 
         }
+    }
+    
+    func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
+        let selectedIndexPaths = indexPathsForSelectedRowsInSection(indexPath.section)
+        
+        if selectedIndexPaths.count == 1 {
+            tableView.deselectRowAtIndexPath(selectedIndexPaths[0], animated: true)
+        }
+        
+        return indexPath
+    }
+    
+    func indexPathsForSelectedRowsInSection(section: Int) -> [NSIndexPath] {
+        return (tableView.indexPathsForSelectedRows ?? []).filter({ (indexPath) -> Bool in
+            indexPath.section == section
+        })
     }
 
     func switchCell(switchCell: SwitchCell, didChangeValue value: Bool) {
