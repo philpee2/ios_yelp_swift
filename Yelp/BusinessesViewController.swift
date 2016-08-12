@@ -13,7 +13,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
 
     var businesses: [Business]!
     var searchBar: UISearchBar!
-    var filters = [String: Any]()
+    var filters: FiltersConfig = FiltersConfig()
     @IBOutlet weak var tableView: UITableView!
     
     override func viewDidLoad() {
@@ -42,7 +42,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
 */
     }
 
-    func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: [String : Any]) {
+    func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: FiltersConfig) {
         self.filters = filters
         performSearch()
     }
@@ -87,11 +87,11 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     
     private func performSearch() {
         MBProgressHUD.showHUDAddedTo(self.view, animated: true)
-        let categories = filters["categories"] as? [String]
-        let isDealsFilter = filters["deals"] as? Bool
-        let sort = filters["sort"] as? YelpSortMode
+        let categories = filters.categories
+        let isDealsFilter = filters.deals
+        let sort = filters.sort
+        let distance = filters.distance
         let search = searchBar.text ?? ""
-        let distance = filters["distance"] as? Double
         Business.searchWithTerm(search, sort: sort, categories: categories, deals: isDealsFilter, distance: distance) { (businesses, error) in
             MBProgressHUD.hideHUDForView(self.view, animated: true)
             self.businesses = businesses

@@ -15,8 +15,22 @@ enum FilterIdentifier: String {
     case Deals = "deals"
 }
 
+struct FiltersConfig {
+    let deals: Bool?
+    let sort: YelpSortMode?
+    let distance: Double?
+    let categories: [String]?
+    
+    init(deals: Bool? = nil, sort: YelpSortMode? = nil, distance: Double? = nil, categories: [String]? = nil) {
+        self.deals = deals
+        self.sort = sort
+        self.distance = distance
+        self.categories = categories
+    }
+}
+
 protocol FiltersViewControllerDelegate {
-    func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: [String:Any])
+    func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: FiltersConfig)
 }
 
 let contractedCategories = 5
@@ -56,12 +70,14 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
             .map { (row, isSelected) in categories[row]["code"]! }
     }
 
-    var filters: [String: Any] {
-        var ret: [String: Any] = ["deals": isDealsFilter, "sort": selectedSort, "distance": selectedDistance]
-        if selectedCategories.count > 0 {
-            ret["categories"] = selectedCategories
-        }
-        return ret
+    var filters: FiltersConfig {
+        return FiltersConfig(
+            deals: isDealsFilter ?? false,
+            sort: selectedSort,
+            distance: selectedDistance,
+            categories: selectedCategories.isEmpty ? nil : selectedCategories
+        )
+        
     }
 
     override func viewDidLoad() {
@@ -122,16 +138,6 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         case .Deals:
             return "Offering a Deal"
         }
-    }
-    
-    func tableView(tableView: UITableView, willSelectRowAtIndexPath indexPath: NSIndexPath) -> NSIndexPath? {
-        let selectedIndexPath = indexPathOfSelectedRowInSection(indexPath.section)
-        
-        if let selectedIndexPath = selectedIndexPath {
-            tableView.deselectRowAtIndexPath(selectedIndexPath, animated: true)
-        }
-        
-        return indexPath
     }
 
     func switchCell(switchCell: SwitchCell, didChangeValue value: Bool) {
