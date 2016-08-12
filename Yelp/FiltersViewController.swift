@@ -33,6 +33,7 @@ protocol FiltersViewControllerDelegate {
     func filtersViewController(filtersViewController: FiltersViewController, didUpdateFilters filters: FiltersConfig)
 }
 
+// Number of categories that appear in the contracted state
 let contractedCategories = 5
 
 class FiltersViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, SwitchCellDelegate {
@@ -104,7 +105,8 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         switch tableStructure[section] {
         case .Category:
-            return isFilterExpanded(.Category) ? categories.count : contractedCategories
+            // +1 for the "See More" cell
+            return isFilterExpanded(.Category) ? categories.count : contractedCategories + 1
         case .Sort:
             return isFilterExpanded(.Sort) ? yelpSortLabels.count : 1
         case .Distance:
@@ -152,28 +154,40 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
 
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let section = tableStructure[indexPath.section]
+        if section == .Deals {
+            return
+        }
+        
         if section == .Sort {
             if isFilterExpanded(.Sort) || selectedSort == nil {
                 selectedSort = YelpSortMode(rawValue: indexPath.row)
             }
+            toggleSectionExpanded(section)
         } else if section == .Distance {
             if isFilterExpanded(.Distance) || selectedDistanceMode == nil {
                 selectedDistanceMode = YelpDistanceMode(rawValue: indexPath.row)
             }
-        }
-        
-        if (section == .Sort || section == .Distance) {
             toggleSectionExpanded(section)
-            tableView.reloadData()
+        } else if section == .Category {
+            if !isFilterExpanded(.Category) && indexPath.row == contractedCategories {
+                toggleSectionExpanded(section)
+            }
         }
+        tableView.reloadData()
     }
 
     private func getCategoryCell(indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("SwitchCell", forIndexPath: indexPath) as! SwitchCell
-        cell.switchLabel.text = categories[indexPath.row]["name"]
-        cell.delegate = self
-        cell.onSwitch.on = categorySwitchStates[indexPath.row] ?? false
-        return cell
+        if isFilterExpanded(.Category) || indexPath.row < contractedCategories {
+            let cell = tableView.dequeueReusableCellWithIdentifier("SwitchCell", forIndexPath: indexPath) as! SwitchCell
+            cell.switchLabel.text = categories[indexPath.row]["name"]
+            cell.delegate = self
+            cell.onSwitch.on = categorySwitchStates[indexPath.row] ?? false
+            return cell
+        } else {
+            let cell = UITableViewCell()
+            cell.textLabel!.text = "See more"
+            return cell
+        }
     }
 
     private func getSortCell(indexPath: NSIndexPath) -> RadioCell {
