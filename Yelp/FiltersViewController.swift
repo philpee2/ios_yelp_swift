@@ -153,9 +153,13 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
     func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
         let section = tableStructure[indexPath.section]
         if section == .Sort {
-            selectedSort = YelpSortMode(rawValue: indexPath.row)
+            if isFilterExpanded(.Sort) || selectedSort == nil {
+                selectedSort = YelpSortMode(rawValue: indexPath.row)
+            }
         } else if section == .Distance {
-            selectedDistanceMode = YelpDistanceMode(rawValue: indexPath.row)
+            if isFilterExpanded(.Distance) || selectedDistanceMode == nil {
+                selectedDistanceMode = YelpDistanceMode(rawValue: indexPath.row)
+            }
         }
         
         if (section == .Sort || section == .Distance) {
@@ -197,9 +201,13 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
         selectedIndex: Int? ) -> RadioCell
     {
         let cell = tableView.dequeueReusableCellWithIdentifier("RadioCell") as! RadioCell
+        cell.accessoryType = .None
         var cellText: String
         if isFilterExpanded(sortOrDistance) {
             cellText = options[indexPath.row]
+            if indexPath.row == selectedIndex {
+                cell.accessoryType = .Checkmark
+            }
         } else if selectedIndex == nil {
             cellText = options[0]
         } else {
