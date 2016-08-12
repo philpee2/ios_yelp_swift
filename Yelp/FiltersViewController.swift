@@ -173,7 +173,8 @@ class FiltersViewController: UIViewController, UITableViewDataSource, UITableVie
                 toggleSectionExpanded(section)
             }
         }
-        tableView.reloadData()
+
+        tableView.reloadSections(NSIndexSet(index: indexPath.section), withRowAnimation: .Fade)
     }
 
     private func getCategoryCell(indexPath: NSIndexPath) -> UITableViewCell {
