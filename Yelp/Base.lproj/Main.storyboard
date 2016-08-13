@@ -115,13 +115,20 @@
                                     </tableViewCell>
                                 </prototypes>
                             </tableView>
+                            <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" showsUserLocation="YES" translatesAutoresizingMaskIntoConstraints="NO" id="UXT-GX-BfM">
+                                <rect key="frame" x="0.0" y="0.0" width="320" height="504"/>
+                            </mapView>
                         </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                         <constraints>
+                            <constraint firstAttribute="trailing" secondItem="UXT-GX-BfM" secondAttribute="trailing" id="1iy-2H-Mbm"/>
+                            <constraint firstItem="UXT-GX-BfM" firstAttribute="leading" secondItem="XhR-oz-92f" secondAttribute="leading" id="M2I-W5-xOk"/>
                             <constraint firstItem="Qus-uf-gjE" firstAttribute="leading" secondItem="XhR-oz-92f" secondAttribute="leading" id="TLt-l1-qSB"/>
                             <constraint firstAttribute="trailing" secondItem="Qus-uf-gjE" secondAttribute="trailing" id="eww-PY-Cae"/>
                             <constraint firstItem="Qus-uf-gjE" firstAttribute="top" secondItem="XhR-oz-92f" secondAttribute="top" id="pPE-c3-rY6"/>
                             <constraint firstItem="VBY-gq-v8E" firstAttribute="top" secondItem="Qus-uf-gjE" secondAttribute="bottom" id="snd-F5-zC6"/>
+                            <constraint firstItem="UXT-GX-BfM" firstAttribute="top" secondItem="XhR-oz-92f" secondAttribute="top" id="taO-wd-x5K"/>
+                            <constraint firstAttribute="bottom" secondItem="UXT-GX-BfM" secondAttribute="bottom" id="vHS-Zu-SMD"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" title="Yelp" id="zZe-XJ-nYM">
@@ -133,6 +140,7 @@
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="mapView" destination="UXT-GX-BfM" id="wwT-YF-Zwd"/>
                         <outlet property="tableView" destination="Qus-uf-gjE" id="y0b-1m-kl7"/>
                     </connections>
                 </viewController>

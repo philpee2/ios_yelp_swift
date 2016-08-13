@@ -8,16 +8,20 @@
 
 import UIKit
 import MBProgressHUD
+import MapKit
+import CoreLocation
 
-class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate, UISearchBarDelegate, UIScrollViewDelegate {
+class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate, UISearchBarDelegate, UIScrollViewDelegate, CLLocationManagerDelegate, MKMapViewDelegate {
 
     var businesses: [Business] = [Business]()
     var searchBar: UISearchBar!
     var filters: FiltersConfig = FiltersConfig()
     var searchPage: Int = 0
+    var locationManager: CLLocationManager!
 
     var isMoreDataLoading = false
     @IBOutlet weak var tableView: UITableView!
+    @IBOutlet weak var mapView: MKMapView!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -30,6 +34,13 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         tableView.dataSource = self
         tableView.rowHeight = UITableViewAutomaticDimension
         tableView.estimatedRowHeight = 120
+        tableView.hidden = true
+
+        locationManager = CLLocationManager()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+        locationManager.distanceFilter = 200
+        locationManager.requestWhenInUseAuthorization()
 
         performSearch()
 
@@ -100,6 +111,10 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
             MBProgressHUD.hideHUDForView(self.view, animated: true)
             self.businesses.appendContentsOf(businesses)
             self.isMoreDataLoading = false
+
+            for business in self.businesses {
+                self.addBusinessAnnotation(business)
+            }
             self.tableView.reloadData()
         }
     }
@@ -118,13 +133,67 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         if (!isMoreDataLoading) {
             let scrollViewContentHeight = tableView.contentSize.height
             let scrollOffsetThreshold = scrollViewContentHeight - tableView.bounds.size.height
-            
+
             // When the user has scrolled past the threshold, start requesting
             if(scrollView.contentOffset.y > scrollOffsetThreshold && tableView.dragging) {
                 searchPage += 1
                 performSearch()
             }
         }
+    }
+
+    // MARK: - Map view
+
+    func goToLocation(location: CLLocation) {
+        let span = MKCoordinateSpanMake(0.1, 0.1)
+        let region = MKCoordinateRegionMake(location.coordinate, span)
+        mapView.setRegion(region, animated: false)
+    }
+
+    func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
+        if status == CLAuthorizationStatus.AuthorizedWhenInUse {
+            locationManager.startUpdatingLocation()
+        }
+    }
+
+    func locationManager(manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.first {
+            let span = MKCoordinateSpanMake(0.1, 0.1)
+            let region = MKCoordinateRegionMake(location.coordinate, span)
+            mapView.setRegion(region, animated: false)
+        }
+    }
+
+    func addBusinessAnnotation(business: Business) {
+        let geocoder = CLGeocoder()
+        geocoder.geocodeAddressString(business.address!) {
+            if let placemark = $0.0 {
+                let coords = placemark[0].location!.coordinate
+                self.addAnnotationAtCoordinate(coords, title: business.name ?? "Nameless business")
+            }
+        }
+    }
+
+    func addAnnotationAtCoordinate(coordinate: CLLocationCoordinate2D, title: String) {
+        let annotation = MKPointAnnotation()
+        annotation.coordinate = coordinate
+        annotation.title = title
+        mapView.addAnnotation(annotation)
+    }
+
+    func mapView(mapView: MKMapView, viewForAnnotation annotation: MKAnnotation) -> MKAnnotationView? {
+        let identifier = "customAnnotationView"
+
+        // custom image annotation
+        var annotationView = mapView.dequeueReusableAnnotationViewWithIdentifier(identifier)
+        if (annotationView == nil) {
+            annotationView = MKAnnotationView(annotation: annotation, reuseIdentifier: identifier)
+        } else {
+            annotationView!.annotation = annotation
+        }
+        annotationView!.image = UIImage(named: "customAnnotationImage")
+
+        return annotationView
     }
 
 }
