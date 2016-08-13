@@ -99,7 +99,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         searchBar.text = ""
     }
 
-    private func performSearch() {
+    private func performSearch(replaceExisting: Bool = true) {
         MBProgressHUD.showHUDAddedTo(self.view, animated: true)
         let categories = filters.categories
         let isDealsFilter = filters.deals
@@ -109,9 +109,14 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         isMoreDataLoading = true
         Business.searchWithTerm(search, sort: sort, categories: categories, deals: isDealsFilter, distance: distance, page: searchPage) { (businesses, error) in
             MBProgressHUD.hideHUDForView(self.view, animated: true)
-            self.businesses.appendContentsOf(businesses)
+            if replaceExisting {
+                self.businesses = businesses
+            } else {
+                self.businesses.appendContentsOf(businesses)
+            }
             self.isMoreDataLoading = false
-
+            
+            self.clearMapAnnotations()
             for business in self.businesses {
                 self.addBusinessAnnotation(business)
             }
@@ -137,7 +142,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
             // When the user has scrolled past the threshold, start requesting
             if(scrollView.contentOffset.y > scrollOffsetThreshold && tableView.dragging) {
                 searchPage += 1
-                performSearch()
+                performSearch(false)
             }
         }
     }
@@ -194,6 +199,11 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         annotationView!.image = UIImage(named: "customAnnotationImage")
 
         return annotationView
+    }
+    
+    func clearMapAnnotations() {
+        let annotationsToRemove = mapView.annotations.filter { $0 !== mapView.userLocation }
+        mapView.removeAnnotations( annotationsToRemove )
     }
 
 }
