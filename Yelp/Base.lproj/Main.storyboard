@@ -138,10 +138,26 @@
                                 <segue destination="Ypu-8k-3mK" kind="modal" id="PT9-WT-0Gf"/>
                             </connections>
                         </barButtonItem>
+                        <barButtonItem key="rightBarButtonItem" style="plain" id="Hh1-pR-drQ">
+                            <segmentedControl key="customView" opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="bar" selectedSegmentIndex="0" id="zDg-3V-GXE">
+                                <rect key="frame" x="233" y="7" width="71" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <segments>
+                                    <segment title="Map"/>
+                                    <segment title="List"/>
+                                </segments>
+                                <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                                <connections>
+                                    <action selector="viewTypeChanged:" destination="2xI-yr-O5N" eventType="valueChanged" id="Ksd-NZ-kkO"/>
+                                </connections>
+                            </segmentedControl>
+                            <color key="tintColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                        </barButtonItem>
                     </navigationItem>
                     <connections>
                         <outlet property="mapView" destination="UXT-GX-BfM" id="wwT-YF-Zwd"/>
                         <outlet property="tableView" destination="Qus-uf-gjE" id="y0b-1m-kl7"/>
+                        <outlet property="viewControl" destination="zDg-3V-GXE" id="JKm-J9-yvx"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Fgb-4b-F1b" userLabel="First Responder" sceneMemberID="firstResponder"/>

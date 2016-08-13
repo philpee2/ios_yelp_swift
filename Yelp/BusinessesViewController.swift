@@ -22,6 +22,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
     var isMoreDataLoading = false
     @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var mapView: MKMapView!
+    @IBOutlet weak var viewControl: UISegmentedControl!
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -115,11 +116,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
                 self.businesses.appendContentsOf(businesses)
             }
             self.isMoreDataLoading = false
-            
-            self.clearMapAnnotations()
-            for business in self.businesses {
-                self.addBusinessAnnotation(business)
-            }
+            self.resetMap()
             self.tableView.reloadData()
         }
     }
@@ -205,5 +202,21 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         let annotationsToRemove = mapView.annotations.filter { $0 !== mapView.userLocation }
         mapView.removeAnnotations( annotationsToRemove )
     }
+    
+    func resetMap() {
+        self.clearMapAnnotations()
+        for business in businesses {
+            self.addBusinessAnnotation(business)
+        }
+    }
 
+    @IBAction func viewTypeChanged(sender: AnyObject) {
+        if viewControl.selectedSegmentIndex == 0 {
+            mapView.hidden = false
+            tableView.hidden = true
+        } else {
+            mapView.hidden = true
+            tableView.hidden = false
+        }
+    }
 }
