@@ -9,13 +9,16 @@
 import UIKit
 import MBProgressHUD
 
-class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate, UISearchBarDelegate {
+class BusinessesViewController: UIViewController, UITableViewDelegate, UITableViewDataSource, FiltersViewControllerDelegate, UISearchBarDelegate, UIScrollViewDelegate {
 
-    var businesses: [Business]!
+    var businesses: [Business] = [Business]()
     var searchBar: UISearchBar!
     var filters: FiltersConfig = FiltersConfig()
+    var searchPage: Int = 0
+
+    var isMoreDataLoading = false
     @IBOutlet weak var tableView: UITableView!
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -52,7 +55,7 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
 
 
     func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return businesses?.count ?? 0
+        return businesses.count
     }
 
     func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
@@ -65,26 +68,26 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    
+
     // MARK: - Search bar
-    
+
     func searchBarCancelButtonClicked(searchBar: UISearchBar) {
         searchBar.showsCancelButton = false
         searchBar.endEditing(true)
         searchBar.text = ""
     }
-    
+
     func searchBarTextDidBeginEditing(searchBar: UISearchBar) {
         searchBar.showsCancelButton = true
     }
-    
+
     func searchBarSearchButtonClicked(searchBar: UISearchBar) {
         performSearch()
         searchBar.showsCancelButton = false
         searchBar.endEditing(true)
         searchBar.text = ""
     }
-    
+
     private func performSearch() {
         MBProgressHUD.showHUDAddedTo(self.view, animated: true)
         let categories = filters.categories
@@ -92,9 +95,11 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         let sort = filters.sort
         let distance = filters.distance
         let search = searchBar.text ?? ""
-        Business.searchWithTerm(search, sort: sort, categories: categories, deals: isDealsFilter, distance: distance) { (businesses, error) in
+        isMoreDataLoading = true
+        Business.searchWithTerm(search, sort: sort, categories: categories, deals: isDealsFilter, distance: distance, page: searchPage) { (businesses, error) in
             MBProgressHUD.hideHUDForView(self.view, animated: true)
-            self.businesses = businesses
+            self.businesses.appendContentsOf(businesses)
+            self.isMoreDataLoading = false
             self.tableView.reloadData()
         }
     }
@@ -105,6 +110,21 @@ class BusinessesViewController: UIViewController, UITableViewDelegate, UITableVi
         let navigationController = segue.destinationViewController as! UINavigationController
         let filtersViewController = navigationController.topViewController as! FiltersViewController
         filtersViewController.delegate = self
+    }
+
+    // MARK: - Scroll view
+
+    func scrollViewDidScroll(scrollView: UIScrollView) {
+        if (!isMoreDataLoading) {
+            let scrollViewContentHeight = tableView.contentSize.height
+            let scrollOffsetThreshold = scrollViewContentHeight - tableView.bounds.size.height
+            
+            // When the user has scrolled past the threshold, start requesting
+            if(scrollView.contentOffset.y > scrollOffsetThreshold && tableView.dragging) {
+                searchPage += 1
+                performSearch()
+            }
+        }
     }
 
 }
